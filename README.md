@@ -36,5 +36,5 @@ Se despliega el contenido de la carpeta tal cual, como sitio estático en
 
 ## Licencia
 
-El contenido, los textos y las imágenes son de Continum4. Las tipografías
+El contenido, los textos y las imágenes son de continum4. Las tipografías
 incluidas en `assets/fonts/` mantienen su propia licencia (OFL 1.1).
