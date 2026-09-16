@@ -8,8 +8,13 @@ Thumbs.db
 *.swp
 *~
 
-# Herramientas locales
+# Instrucciones y skills para agentes de IA: son de trabajo, no del sitio,
+# y este repositorio es público.
 .claude/
+AGENTS.md
+CLAUDE.md
+
+# Herramientas locales
 node_modules/
 
 # Temporales
