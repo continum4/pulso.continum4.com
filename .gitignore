@@ -1,0 +1,17 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.idea/
+.vscode/
+*.swp
+*~
+
+# Herramientas locales
+.claude/
+node_modules/
+
+# Temporales
+*.log
+*.tmp

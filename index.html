@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulso — tu diario de padecimientos, en tu teléfono</title>
+<meta name="description" content="Un diario para anotar cada día qué padecimientos has tenido y cómo ha estado tu ánimo. Funciona sin conexión y no pide el permiso de internet: tu historial no sale del teléfono.">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="Pulso — tu diario de padecimientos, en tu teléfono">
+<meta property="og:description" content="Anota cada día cómo te has sentido y velo todo junto en el calendario del mes. Sin cuentas, sin servidores, sin conexión.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pulso.continum4.com/">
+<meta property="og:image" content="https://pulso.continum4.com/assets/img/icono.png">
+<style>
+  @font-face {
+    font-family: "Instrument Serif";
+    src: url("assets/fonts/InstrumentSerif-Regular.ttf") format("truetype");
+    font-weight: 400;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "DM Sans";
+    src: url("assets/fonts/DMSans.ttf") format("truetype-variations");
+    font-weight: 100 1000;
+    font-display: swap;
+  }
+
+  :root {
+    color-scheme: light dark;
+    --base: #0f5f58;
+    --deep: #0a4842;
+    --light: #48a797;
+    --soft: #e6f0ee;
+    --fondo: #f6f6fa;
+    --superficie: #ffffff;
+    --tinta: #1a1b2e;
+    --suave: #787a93;
+    --linea: #ededf4;
+    --teja: #ececf3;
+    --acento: #0f5f58;
+    --sombra: 0 1px 2px rgba(26, 27, 46, 0.04), 0 12px 32px rgba(26, 27, 46, 0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --soft: #13292b;
+      --fondo: #0f0f17;
+      --superficie: #17171f;
+      --tinta: #f4f4f8;
+      --suave: #9394a8;
+      --linea: #26262f;
+      --teja: #1e1e28;
+      --acento: #6cc3b2;
+      --sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--tinta);
+    font: 400 17px/1.65 "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .envoltura {
+    max-width: 62rem;
+    margin: 0 auto;
+    padding-inline: 1.5rem;
+  }
+  h1, h2, h3 { font-weight: 400; letter-spacing: -0.015em; }
+  a { color: var(--acento); }
+  a:hover { text-decoration: none; }
+  img { max-width: 100%; display: block; }
+
+  /* --- cabecera --- */
+  .heroe {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1a7c71 0%, var(--base) 45%, var(--deep) 100%);
+    color: #fff;
+    padding-block: 4.5rem 5rem;
+  }
+  .heroe::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+    pointer-events: none;
+  }
+  .latido {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 8.5rem;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+  .heroe .envoltura { position: relative; z-index: 1; }
+  .marca {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 2.5rem;
+  }
+  .marca img {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  }
+  .marca span {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
+  }
+  .heroe h1 {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: clamp(2.6rem, 7vw, 4.2rem);
+    line-height: 1.08;
+    margin: 0 0 1.25rem;
+    max-width: 18ch;
+  }
+  .heroe p {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    line-height: 1.55;
+    max-width: 44ch;
+    margin: 0 0 2rem;
+    color: rgba(255, 255, 255, 0.86);
+  }
+  .sellos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sellos li {
+    font-size: 0.88rem;
+    letter-spacing: 0.01em;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  /* --- secciones --- */
+  section { padding-block: 4.5rem; }
+  .titulo {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: clamp(1.9rem, 4vw, 2.5rem);
+    line-height: 1.15;
+    margin: 0 0 0.75rem;
+  }
+  .entradilla {
+    color: var(--suave);
+    max-width: 52ch;
+    margin: 0 0 3rem;
+    font-size: 1.05rem;
+  }
+
+  .rejilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.25rem;
+  }
+  .tarjeta {
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    padding: 1.6rem 1.5rem;
+  }
+  .tarjeta h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+    font-weight: 500;
+  }
+  .tarjeta p {
+    margin: 0;
+    color: var(--suave);
+    font-size: 0.97rem;
+    line-height: 1.6;
+  }
+  .simbolo {
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: var(--soft);
+    color: var(--base);
+    margin-bottom: 1rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    .simbolo { color: var(--light); }
+  }
+  .simbolo svg { width: 20px; height: 20px; }
+
+  /* --- capturas --- */
+  .capturas { background: var(--teja); }
+  .tira {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  .tira figure {
+    margin: 0;
+  }
+  .tira img {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--linea);
+    box-shadow: var(--sombra);
+    background: var(--superficie);
+  }
+  .tira figcaption {
+    margin-top: 0.85rem;
+    font-size: 0.9rem;
+    color: var(--suave);
+    text-align: center;
+  }
+  @media (max-width: 52rem) {
+    .tira { grid-template-columns: repeat(2, 1fr); gap: 1.5rem 1rem; }
+  }
+
+  /* --- privacidad --- */
+  .privacidad .caja {
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-left: 3px solid var(--base);
+    border-radius: 0 16px 16px 0;
+    padding: 1.6rem 1.75rem;
+    margin-bottom: 2rem;
+  }
+  .privacidad .caja p { margin: 0; }
+  .privacidad .caja code {
+    background: var(--teja);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+  .lista {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    max-width: 46rem;
+  }
+  .lista li {
+    padding: 0.85rem 0 0.85rem 1.75rem;
+    border-bottom: 1px solid var(--linea);
+    position: relative;
+    color: var(--suave);
+  }
+  .lista li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1.45rem;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--base);
+  }
+  @media (prefers-color-scheme: dark) {
+    .lista li::before { background: var(--light); }
+  }
+  .lista strong { color: var(--tinta); font-weight: 500; }
+
+  .boton {
+    display: inline-block;
+    background: var(--base);
+    color: #fff;
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.97rem;
+  }
+  .boton:hover { background: var(--deep); }
+  @media (prefers-color-scheme: dark) {
+    .boton { background: var(--light); color: #08211e; }
+    .boton:hover { background: #6cc3b2; }
+  }
+
+  /* --- descarga --- */
+  .descarga { text-align: center; }
+  .descarga .titulo { margin-inline: auto; }
+  .descarga .entradilla { margin-inline: auto; }
+  .nota {
+    color: var(--suave);
+    font-size: 0.92rem;
+    margin-top: 1.25rem;
+  }
+
+  /* --- pie --- */
+  footer {
+    border-top: 1px solid var(--linea);
+    padding-block: 2.5rem 3.5rem;
+    color: var(--suave);
+    font-size: 0.93rem;
+  }
+  footer .envoltura {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer nav { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  footer p { margin: 0; }
+</style>
+</head>
+<body>
+
+<header class="heroe">
+  <svg class="latido" viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path d="M0 100 H800 L826 100 L859 24 L891 176 L927 62 L959 118 L983 100 H1200"
+          fill="none" stroke="#fff" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+  </svg>
+  <div class="envoltura">
+    <div class="marca">
+      <img src="assets/img/icono.png" width="44" height="44" alt="">
+      <span>Pulso</span>
+    </div>
+    <h1>Lo que te pasó cada día, en un calendario.</h1>
+    <p>
+      Anota tus padecimientos y cómo ha estado tu ánimo, y velo todo junto
+      al mirar el mes. Nada más, y a propósito.
+    </p>
+    <ul class="sellos">
+      <li>Sin cuentas</li>
+      <li>Sin servidores</li>
+      <li>Sin conexión</li>
+      <li>Sin anuncios</li>
+    </ul>
+  </div>
+</header>
+
+<section id="que-hace">
+  <div class="envoltura">
+    <h2 class="titulo">Un diario, no un diagnóstico</h2>
+    <p class="entradilla">
+      Pulso no calcula, no interpreta y no sugiere nada. Solo guarda lo que tú
+      anotas y te lo devuelve ordenado, para que puedas mirarlo o contárselo a
+      quien te atiende.
+    </p>
+
+    <div class="rejilla">
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/>
+          </svg>
+        </div>
+        <h3>El mes de un vistazo</h3>
+        <p>
+          Cada día del calendario muestra su ánimo y los padecimientos que
+          anotaste, con su intensidad. Las rachas se ven sin buscarlas.
+        </p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M12 5v14"/>
+          </svg>
+        </div>
+        <h3>Anotar lleva segundos</h3>
+        <p>
+          Tocas un nivel del 1 al 5 y se guarda solo. Sin formularios, sin
+          botón de guardar y sin campos obligatorios.
+        </p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </div>
+        <h3>Tus padecimientos, tus palabras</h3>
+        <p>
+          Los creas tú, con el nombre que quieras, un emoji y un color. Nada de
+          listas cerradas ni vocabulario médico.
+        </p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+          </svg>
+        </div>
+        <h3>Bajo llave si quieres</h3>
+        <p>
+          Puedes pedir la huella, el rostro o el PIN del propio teléfono al
+          abrir la aplicación. Quien lo comprueba es Android, no Pulso.
+        </p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12M8 11l4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+          </svg>
+        </div>
+        <h3>Respaldo que es tuyo</h3>
+        <p>
+          Exportas tu historial a un archivo y eliges dónde guardarlo. Importar
+          funciona igual, en sentido contrario.
+        </p>
+      </div>
+
+      <div class="tarjeta">
+        <div class="simbolo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/>
+          </svg>
+        </div>
+        <h3>Español e inglés</h3>
+        <p>
+          La aplicación sigue el idioma del teléfono, y puedes cambiarlo a mano
+          desde Ajustes cuando no coincida.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="capturas">
+  <div class="envoltura">
+    <h2 class="titulo">Cómo se ve</h2>
+    <p class="entradilla">
+      Cuatro pantallas y ya está toda la aplicación: el mes, el día, tus
+      padecimientos y los ajustes.
+    </p>
+    <div class="tira">
+      <figure>
+        <img src="assets/img/calendario.webp" width="640" height="1387" loading="lazy"
+             alt="Calendario mensual de Pulso: cada día muestra un emoji de ánimo y los padecimientos anotados.">
+        <figcaption>El mes</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/dia.webp" width="640" height="1387" loading="lazy"
+             alt="Hoja del día con la escala de ánimo y un nivel del 1 al 5 para cada padecimiento.">
+        <figcaption>El día</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/padecimientos.webp" width="640" height="1387" loading="lazy"
+             alt="Lista de padecimientos creados, cada uno con su emoji y su color.">
+        <figcaption>Tus padecimientos</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/img/ajustes.webp" width="640" height="1387" loading="lazy"
+             alt="Ajustes de Pulso: idioma, bloqueo de la aplicación, respaldo y borrado de datos.">
+        <figcaption>Ajustes</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="privacidad" id="privacidad">
+  <div class="envoltura">
+    <h2 class="titulo">No recoge nada, y puedes comprobarlo</h2>
+    <p class="entradilla">
+      Que una aplicación de salud prometa privacidad es fácil. Esta lo apoya en
+      algo verificable desde fuera.
+    </p>
+
+    <div class="caja">
+      <p>
+        <strong>Pulso no pide el permiso de internet.</strong> Sin
+        <code>android.permission.INTERNET</code>, Android no le deja abrir
+        ninguna conexión de red, por mucho que el programa lo intentara. La
+        lista de permisos la publica Google en la ficha de la aplicación, no la
+        escribimos nosotros.
+      </p>
+    </div>
+
+    <ul class="lista">
+      <li><strong>No hay servidores ni cuentas.</strong> No hay registro, ni inicio de sesión, ni nada que sincronizar.</li>
+      <li><strong>No hay analítica ni informes de fallos.</strong> Ningún componente de terceros envía información a ninguna parte.</li>
+      <li><strong>No hay anuncios</strong> ni identificadores publicitarios.</li>
+      <li><strong>Tu historial vive en el almacenamiento privado de la aplicación</strong> y sale de ahí solo si tú exportas un respaldo.</li>
+      <li><strong>Borrarlo todo es inmediato:</strong> desde Ajustes, o desinstalando. No hay copia nuestra que pedir que borren.</li>
+    </ul>
+
+    <a class="boton" href="privacidad.html">Leer la política de privacidad</a>
+  </div>
+</section>
+
+<section class="descarga" id="descarga">
+  <div class="envoltura">
+    <h2 class="titulo">Conseguir Pulso</h2>
+    <p class="entradilla">
+      Android. Pronto en Google Play; ahora mismo está en prueba cerrada con un
+      grupo pequeño de personas.
+    </p>
+    <a class="boton" href="mailto:hello@continum4.com?subject=Pulso">Escribir a Continum4</a>
+    <p class="nota">Si quieres probarla antes de que salga, dínoslo por correo.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="envoltura">
+    <p>Pulso es una aplicación de <a href="https://continum4.com">Continum4</a>.</p>
+    <nav>
+      <a href="privacidad.html">Privacidad</a>
+      <a href="mailto:hello@continum4.com">Contacto</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
