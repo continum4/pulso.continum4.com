@@ -1,0 +1,98 @@
+name: Deploy site
+
+on:
+  push:
+    branches:
+      - master
+  # Permite relanzar el despliegue a mano desde la pestaña Actions, sin tener
+  # que inventar un commit cuando lo que falló fue el servidor y no el código.
+  workflow_dispatch:
+
+# Dos despliegues a la vez sobre el mismo directorio remoto se pisan. Si llega
+# un push mientras otro corre, este espera a que termine en vez de solaparse.
+concurrency:
+  group: deploy-produccion
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    # El runner nace vacío en cada ejecución, así que no conoce al servidor.
+    # En vez de aceptar a ciegas la clave que le contesten, se le da de
+    # antemano la huella buena: si alguien se interpone en la conexión, la
+    # comprobación falla y el despliegue se detiene.
+    #
+    # El valor de SSH_KNOWN_HOSTS sale de ejecutar, desde una red de fiar:
+    #   ssh-keyscan -p PUERTO HOST
+    - name: Set up SSH
+      env:
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+        SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      run: |
+        umask 077
+        printf '%s\n' "$SSH_KEY" > ssh_key
+        printf '%s\n' "$SSH_KNOWN_HOSTS" > known_hosts
+
+        if [ ! -s known_hosts ]; then
+          echo "Falta el secreto SSH_KNOWN_HOSTS." >&2
+          echo "Genéralo con: ssh-keyscan -p PUERTO HOST" >&2
+          exit 1
+        fi
+
+    - name: Check SSH connection
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_PORT: ${{ secrets.SSH_PORT }}
+      run: |
+        ssh -i ssh_key \
+          -o StrictHostKeyChecking=yes \
+          -o UserKnownHostsFile=known_hosts \
+          -p "${SSH_PORT}" "${SSH_USER}@${SSH_HOST}" "echo Connection successful"
+
+    # El sitio es estático: no hay paso de construcción, se sube tal cual. Lo
+    # único que no viaja es lo que sirve para desarrollar el repositorio, no
+    # para servir la página.
+    #
+    # Sin --delete: un archivo borrado aquí se queda huérfano en el servidor.
+    # Se puede añadir cuando SSH_PATH esté comprobado y apunte solo a la raíz
+    # del sitio, porque borra en destino todo lo que no esté en el repositorio.
+    - name: Deploy
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_PORT: ${{ secrets.SSH_PORT }}
+        SSH_PATH: ${{ secrets.SSH_PATH }}
+      run: |
+        rsync -avz \
+          -e "ssh -i ssh_key -o StrictHostKeyChecking=yes -o UserKnownHostsFile=known_hosts -p ${SSH_PORT}" \
+          --exclude='.git' \
+          --exclude='.github' \
+          --exclude='.gitignore' \
+          --exclude='.claude' \
+          --exclude='AGENTS.md' \
+          --exclude='CLAUDE.md' \
+          --exclude='README.md' \
+          --exclude='ssh_key' \
+          --exclude='known_hosts' \
+          ./ "${SSH_USER}@${SSH_HOST}:${SSH_PATH}"
+
+    # Comprobar que lo que se acaba de subir responde de verdad: un rsync
+    # correcto contra una ruta equivocada termina en verde y deja el sitio
+    # igual que estaba. Si el dominio devuelve algo que no sea 200, el deploy
+    # se marca como fallido.
+    - name: Verify site responds
+      run: |
+        codigo=$(curl -sS -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 5 https://pulso.continum4.com/)
+        echo "HTTP ${codigo}"
+        test "${codigo}" = "200"
+
+    - name: Cleanup
+      if: always()
+      run: rm -f ssh_key known_hosts
