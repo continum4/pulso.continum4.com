@@ -290,6 +290,27 @@
   .descarga { text-align: center; }
   .descarga .titulo { margin-inline: auto; }
   .descarga .entradilla { margin-inline: auto; }
+
+  /* El titular, la entradilla y el botón van centrados; lo que se lee para
+     decidir, no. Una advertencia y una lista centradas obligan a buscar dónde
+     empieza cada línea. */
+  .descarga .caja {
+    background: var(--superficie);
+    border: 1px solid var(--linea);
+    border-left: 3px solid var(--base);
+    border-radius: 0 16px 16px 0;
+    padding: 1.6rem 1.75rem;
+    margin: 2.75rem auto 2rem;
+    max-width: 46rem;
+    text-align: left;
+  }
+  .descarga .caja p { margin: 0; }
+  .descarga .lista {
+    margin-inline: auto;
+    text-align: left;
+  }
+  .descarga .lista li:last-child { border-bottom: none; }
+
   .nota {
     color: var(--suave);
     font-size: 0.92rem;
@@ -476,9 +497,10 @@
       <p>
         <strong>Pulso no pide el permiso de internet.</strong> Sin
         <code>android.permission.INTERNET</code>, Android no le deja abrir
-        ninguna conexión de red, por mucho que el programa lo intentara. La
-        lista de permisos la publica Google en la ficha de la aplicación, no la
-        escribimos nosotros.
+        ninguna conexión de red, por mucho que el programa lo intentara. Y la
+        lista de permisos no la escribimos nosotros: la genera tu teléfono a
+        partir de la aplicación instalada, y puedes verla en Ajustes →
+        Aplicaciones → Pulso → Permisos.
       </p>
     </div>
 
@@ -498,11 +520,30 @@
   <div class="envoltura">
     <h2 class="titulo">Conseguir Pulso</h2>
     <p class="entradilla">
-      Android. Pronto en Google Play; ahora mismo está en prueba cerrada con un
-      grupo pequeño de personas.
+      Se descarga desde aquí, no desde una tienda. Android 8.0 o superior, unos
+      59 MB.
     </p>
-    <a class="boton" href="mailto:hello@continum4.com?subject=Pulso">Escribir a continum4</a>
-    <p class="nota">Si quieres probarla antes de que salga, dínoslo por correo.</p>
+
+    <a class="boton" href="https://github.com/continum4/pulso-releases/releases/latest/download/pulso.apk">Descargar para Android</a>
+
+    <div class="caja">
+      <p>
+        <strong>Android te va a avisar, y es normal.</strong> Te pedirá permiso
+        para «instalar aplicaciones desconocidas», y puede que Play Protect diga
+        que no reconoce la aplicación. Le pasa a cualquier programa que no venga
+        de una tienda. El permiso se concede solo para este archivo.
+      </p>
+    </div>
+
+    <ul class="lista">
+      <li><strong>Actualizar no borra nada.</strong> La versión nueva se instala encima de la anterior y conserva tu historial. Lo que sí borra tus datos es desinstalar, así que no desinstales para actualizar.</li>
+      <li><strong>No se actualiza sola.</strong> Pulso no se conecta a internet, ni siquiera para mirar si hay una versión nueva. Cuando salga una, estará en esta página.</li>
+      <li><strong>Puedes comprobar que el archivo es el nuestro.</strong> Cada versión publica la huella de su archivo junto a la descarga.</li>
+    </ul>
+
+    <p class="nota">
+      <a href="https://github.com/continum4/pulso-releases/releases">Ver todas las versiones y sus huellas</a>
+    </p>
   </div>
 </section>
 
